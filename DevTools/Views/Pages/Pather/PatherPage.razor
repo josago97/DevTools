@@ -1,0 +1,32 @@
+﻿@page "/"
+@using DevTools.Utilities
+@using DevTools.Views.Components.Input
+@using DevTools.Views.Components.Split
+@using DevTools.Views.Components.Split.OptionTypes
+@using DevTools.Views.Pages.Pather.Components
+@using DevTools.Views.Pages.Pather.Models
+
+<div class="page">
+    <Split Class="split flex container-split" 
+        Direction="Direction.Vertical"
+        Sizes="new Number[] { 10, 90 }"
+        MinSize="[60, 0]"
+        MaxSize="[150, Number.PositiveInfinity]"
+        SnapOffset="0">
+        <SplitArea Class="top-panel">
+            <InputPath @bind-Path="Path" DebounceTimer="DebounceTimer" Matches="Matches" />
+        </SplitArea>
+        <SplitArea>
+            <Split Class="split flex" Direction="Direction.Horizontal">
+                <SplitArea Class="code-editor">
+                    <CodeEditor @ref="CodeEditor" @bind-Document="Document" DebounceTimer="DebounceTimer" />
+                </SplitArea>
+                <SplitArea Class="output">
+                    <Output Matches="Matches" />
+                </SplitArea>
+            </Split>
+        </SplitArea>
+    </Split>
+</div>
+
+

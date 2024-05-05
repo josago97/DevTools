@@ -1,0 +1,20 @@
+﻿.container {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    height: 100%;
+}
+
+::deep dialog {
+    border-radius: 5px;
+
+    > div {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        align-items: center;
+    }    
+}
+
+.error {
+    color: red;
+}

@@ -1,0 +1,43 @@
+﻿@using System.Diagnostics.CodeAnalysis
+@inherits InputBase<string?>
+
+@if (IsTextArea)
+{
+    <textarea @attributes=AdditionalAttributes 
+        class=@CssClass
+        @bind=Value
+        @bind:after=OnValueChanged 
+        @bind:event="oninput" />
+}
+else
+{
+    <input type="text" 
+        @attributes=AdditionalAttributes 
+        class=@CssClass
+        @bind=Value
+        @bind:after=OnValueChanged 
+        @bind:event="oninput" />
+}
+
+@code {
+    [Parameter]
+    public bool IsTextArea { get; set; }
+
+    [Parameter]
+    public EventCallback<string> TextChanged { get; set; }
+
+    protected override bool TryParseValueFromString(string? value, 
+        [MaybeNullWhen(false)] out string result, 
+        [NotNullWhen(false)] out string? validationErrorMessage)
+    {
+        result = value;
+        validationErrorMessage = null;
+        return true;
+    }
+
+    private void OnValueChanged()
+    {
+        ValueChanged.InvokeAsync(Value);
+        TextChanged.InvokeAsync(Value);
+    }
+}

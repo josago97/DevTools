@@ -1,0 +1,60 @@
+﻿<dialog @ref=_dialog class="dialog @Class" style="@Style">
+    @ChildContent
+</dialog>
+
+@code {
+    private ElementReference _dialog;
+    private DialogInterop _interop;
+    private DotNetObjectReference<Dialog> dotNetObjectReference;
+
+    [Parameter, EditorRequired]
+    public RenderFragment ChildContent { get; set; }
+
+    [Parameter]
+    public string? Class { get; set; }
+
+    [Parameter]
+    public string? Style { get; set; }
+
+    [Parameter]
+    public EventCallback DialogClosed { get; set; }
+
+    [Inject]
+    private IJSRuntime JSRuntime { get; set; }
+
+    public bool IsDialogVisible { get; private set; }
+
+    protected override void OnInitialized()
+    {
+        _interop = new DialogInterop(JSRuntime);
+        dotNetObjectReference = DotNetObjectReference.Create(this);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await _interop.AddCloseEventListener(_dialog, dotNetObjectReference);
+        }
+    }
+
+    [JSInvokable]
+    public void OnDialogClosed()
+    {
+        IsDialogVisible = false;
+        DialogClosed.InvokeAsync();
+        StateHasChanged();
+    }
+
+    public async Task ShowAsync()
+    {
+        IsDialogVisible = true;
+        await _interop.ShowDialogAsync(_dialog);
+        StateHasChanged();
+    }
+
+    public Task CloseAsync()
+    {
+        return _interop.ShowDialogAsync(_dialog);
+    }
+}

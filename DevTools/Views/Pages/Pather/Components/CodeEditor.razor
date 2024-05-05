@@ -1,0 +1,155 @@
+﻿@using BlazorMonaco.Editor
+@using DevTools.Utilities
+@using DevTools.Views.Components.Dialog
+@using DevTools.Views.Pages.Pather.Models
+
+<div class="container">
+    <div>
+        <button onclick="document.getElementById('fileInput').click()">Load File</button>
+        <InputFile id="fileInput" 
+            style="display: none" 
+            accept=".html,.json,.xml,.txt"
+            OnChange="LoadFileAsync" />
+        <button @onclick="OpenLoadUrlDailog">Load Url</button>
+        
+        <span>Language</span>
+    </div>
+    <StandaloneCodeEditor @ref="Editor"
+                        Id="monaco-editor"
+                        ConstructionOptions="EditorConstructionOptions"
+                        OnDidInit="OnEditorInitialized"
+                        OnDidChangeModelContent="OnCodeChangedAsync" />                       
+</div>
+
+<div>
+    <Dialog @ref="LoadUrlDialog" class="bd-backdrop-blur5">
+        <div>
+            <div>Url: <InputText @bind-Value="UrlToLoad" /></div>
+            @if (!string.IsNullOrEmpty(LoadUrlError))
+            {
+                <p class="error">@LoadUrlError</p>
+            }
+            <button @onclick="LoadUrlAsync">Load</button>
+        </div>
+    </Dialog>
+</div>
+
+@code {
+    private CodeAnalyzer _codeAnalyzer;
+
+    [Parameter]
+    public Document Document { get; set; }
+
+    [Parameter]
+    public EventCallback<Document> DocumentChanged { get; set; }
+
+    [Parameter]
+    public IEnumerable<Language> LanguagesAccepted { get; set; }
+
+    [Parameter]
+    public InputDebounceTimer DebounceTimer { get; set; }
+
+    [Inject]
+    private IJSRuntime JSRuntime { get; set; }
+
+    private StandaloneCodeEditor Editor { get; set; }
+    private bool IsEditorInitialized { get; set; }
+    private Dialog LoadUrlDialog { get; set; }
+    private string UrlToLoad { get; set; }
+    private string LoadUrlError { get; set; }
+
+    public CodeEditor()
+    {
+        _codeAnalyzer = new CodeAnalyzer();
+    }
+
+    public async Task ChangeDocument(Document document)
+    {
+        Document = document;
+
+        if (Document != null)
+        {
+            await Editor.SetValue(Document.Content);
+            await Global.SetModelLanguage(JSRuntime, await Editor.GetModel(), "xml");
+            StateHasChanged();
+        }
+    }
+
+    private StandaloneEditorConstructionOptions EditorConstructionOptions(StandaloneCodeEditor editor)
+    {
+        StandaloneEditorConstructionOptions options = new()
+        {
+            AutomaticLayout = true,
+            MouseWheelZoom = true,
+            Minimap = new EditorMinimapOptions()
+            {
+                Autohide = true
+            }
+        };
+
+        return options;
+    }
+
+    private async Task OnEditorInitialized()
+    {
+        TextModel textModel = await Editor.GetModel();
+        await textModel.PushEOL(EndOfLineSequence.LF);
+    }
+    /*
+    private string GetLanguage()
+    {
+    return Document?.Language switch
+        {
+        Language.Html => "html",
+        Language.Json => "json",
+        Language.Xml => "xml",
+        _ => string.Empty
+    };
+    }*/
+
+    private async Task LoadFileAsync(InputFileChangeEventArgs args)
+    {
+        using StreamReader reader = new StreamReader(args.File.OpenReadStream());
+        string fileContent = await reader.ReadToEndAsync();
+        await Editor.SetValue(fileContent);
+    }
+
+    private Task OpenLoadUrlDailog()
+    {
+        return LoadUrlDialog.ShowAsync();
+    }
+
+    private async Task LoadUrlAsync()
+    {
+        using HttpClient httpClient = new HttpClient();
+
+        if (string.IsNullOrWhiteSpace(UrlToLoad))
+        {
+            LoadUrlError = "Url can not be empty";
+        }
+        else
+        {
+            try
+            {
+                string content = await httpClient.GetStringAsync(UrlToLoad);
+                await Editor.SetValue(content);
+                await LoadUrlDialog.CloseAsync();
+            }
+            catch (Exception ex)
+            {
+                LoadUrlError = ex.Message;
+            }
+        }
+    }
+
+    private async Task OnCodeChangedAsync()
+    {
+        string code = await Editor.GetValue();
+        Document = await Models.Document.CreateAsync(code);
+        await DocumentChanged.InvokeAsync(Document);
+
+        DebounceTimer.Start();
+    }
+
+    //private bool CanShowLanguage
+}

@@ -1,0 +1,51 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<libreria>
+  <categoria nombre="Fantasía">
+    <libro>
+      <titulo>El señor de los anillos</titulo>
+      <autor>J.R.R. Tolkien</autor>
+      <anio>1954</anio>
+      <editorial>Minotauro</editorial>
+      <precio>25.00</precio>
+    </libro>
+    <libro>
+      <titulo>Harry Potter y la piedra filosofal</titulo>
+      <autor>J.K. Rowling</autor>
+      <anio>1997</anio>
+      <editorial>Salamandra</editorial>
+      <precio>20.50</precio>
+    </libro>
+  </categoria>
+  <categoria nombre="Ciencia ficción">
+    <libro>
+      <titulo>El fin de la eternidad</titulo>
+      <autor>Isaac Asimov</autor>
+      <anio>1955</anio>
+      <editorial>Ediciones B</editorial>
+      <precio>18.75</precio>
+    </libro>
+    <libro>
+      <titulo>Dune</titulo>
+      <autor>Frank Herbert</autor>
+      <anio>1965</anio>
+      <editorial>Debolsillo</editorial>
+      <precio>22.30</precio>
+    </libro>
+  </categoria>
+  <categoria nombre="Misterio">
+    <libro>
+      <titulo>El código Da Vinci</titulo>
+      <autor>Dan Brown</autor>
+      <anio>2003</anio>
+      <editorial>Planeta</editorial>
+      <precio>19.99</precio>
+    </libro>
+    <libro>
+      <titulo>Sherlock Holmes: Las aventuras</titulo>
+      <autor>Arthur Conan Doyle</autor>
+      <anio>1892</anio>
+      <editorial>Alianza Editorial</editorial>
+      <precio>15.80</precio>
+    </libro>
+  </categoria>
+</libreria>

@@ -1,0 +1,21 @@
+﻿.page {
+    height: 100%;
+    width: 100%;
+}
+
+::deep .container-split {
+    height: 100%;
+}
+
+::deep #monaco-editor {
+    height: 100%;
+}
+
+::deep .monaco-editor {
+    position: absolute !important;
+}
+
+::deep .code-editor,
+::deep .output {
+    border: 2px solid black;
+}

@@ -1,0 +1,156 @@
+﻿@using Microsoft.JSInterop
+@using OptionTypes
+
+<div
+    class="@Class"
+    style="@Style">
+    <CascadingValue Value="this">
+        @ChildContent
+    </CascadingValue>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public RenderFragment ChildContent { get; set; } = null!;
+
+    /// <summary>
+    /// Initial sizes of each element in percents or CSS values.
+    /// </summary>
+    [Parameter]
+    public IEnumerable<Number>? Sizes { get; init; }
+
+    /// <summary>
+    /// Minimum size of each element.
+    /// </summary>
+    [Parameter]
+    public NumberOrArray? MinSize { get; init; }
+
+    /// <summary>
+    /// Maximum size of each element.
+    /// </summary>
+    [Parameter]
+    public NumberOrArray? MaxSize { get; init; }
+
+    /// <summary>
+    /// When the split is created, if ExpandToMin is true, the minSize for each element overrides the percentage value from the sizes option.
+    /// </summary>
+    [Parameter]
+    public bool? ExpandToMin { get; init; }
+
+    /// <summary>
+    /// Gutter size in pixels.
+    /// </summary>
+    [Parameter]
+    public Number? GutterSize { get; init; }
+
+    /// <summary>
+    /// Determines how the gutter aligns between the two elements.
+    /// </summary>
+    [Parameter]
+    public GutterAlign? GutterAlign { get; init; }
+
+    /// <summary>
+    /// Snap to minimum size offset in pixels.
+    /// </summary>
+    [Parameter]
+    public NumberOrArray? SnapOffset { get; init; }
+
+    /// <summary>
+    /// Drag this number of pixels at a time. Defaults to 1 for smooth dragging, but can be set to a pixel value to give more control over the resulting sizes.
+    /// Works particularly well when the gutterSize is set to the same size.
+    /// </summary>
+    [Parameter]
+    public Number? DragInterval { get; init; }
+
+    /// <summary>
+    /// Direction to split.
+    /// </summary>
+    [Parameter]
+    public Direction? Direction { get; init; }
+
+    /// <summary>
+    /// Cursor to display while dragging.
+    /// </summary>
+    [Parameter]
+    public string? Cursor { get; init; }
+
+    [Parameter]
+    public string? Class { get; set; }
+
+    [Parameter]
+    public string? Style { get; set; }
+
+    [Inject]
+    public IJSRuntime JSRuntime { get; set; } = null!;
+
+    private readonly List<ElementReference> _splitAreas = new();
+    private bool _areasHasChanged = false;
+    private SplitInterop _splitInterop;
+    private SplitInstance? _instance;
+
+    // Used to ensure we're only ever able to create a single instance despite multi-threaded rendering
+    private readonly SemaphoreSlim _createInstanceLock = new(1, 1);
+
+    protected override void OnInitialized()
+    {
+        _splitInterop = new SplitInterop(JSRuntime);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender || _areasHasChanged)
+        {
+            _areasHasChanged = false;
+            await CreateInstance();
+        }
+    }
+
+    public void RegisterSection(ElementReference section)
+    {
+        _splitAreas.Add(section);
+        _areasHasChanged = true;
+        StateHasChanged();
+    }
+
+    public void UnregisterSection(ElementReference section)
+    {
+        _splitAreas.Remove(section);
+        _areasHasChanged = true;
+        StateHasChanged();
+    }
+
+    private async Task CreateInstance()
+    {
+        await _createInstanceLock.WaitAsync();
+
+        try
+        {
+            if (_instance != null)
+                await _instance.Destroy();
+
+            if (_splitAreas.Count > 0)
+            {
+                var options = new SplitOptions
+                {
+                    Sizes = Sizes,
+                    MinSize = MinSize,
+                    MaxSize = MaxSize,
+                    ExpandToMin = ExpandToMin,
+                    GutterSize = GutterSize,
+                    GutterAlign = GutterAlign,
+                    SnapOffset = SnapOffset,
+                    DragInterval = DragInterval,
+                    Direction = Direction,
+                    Cursor = Cursor
+                };
+
+                _instance = await _splitInterop.CreateInstance(_splitAreas, options);
+            }
+        }
+        finally
+        {
+            _createInstanceLock.Release();
+        }
+    }
+
+}

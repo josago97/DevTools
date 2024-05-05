@@ -1,0 +1,67 @@
+﻿@using DevTools.Utilities
+@using DevTools.Views.Components.Input
+@using DevTools.Views.Pages.Pather.Models
+
+<div class="container">
+    <MyInputText IsTextArea="true" @bind-Value=PathValue TextChanged="OnPathChanged" />
+    <div>
+        <div>
+            @if (string.IsNullOrEmpty(Error))
+            {
+                <span>Elements found: @Matches.Count</span>
+            }
+            else
+            {
+                <span class="error">Error: @Error</span>
+            }            
+        </div>
+        <div><a href="">See documentation</a></div>
+    </div>
+</div>
+
+@code {
+    private static readonly Dictionary<PathType, string> PATH_DOC = new()
+    {
+        { PathType.CssSelector, "https://www.w3schools.com/cssref/css_selectors.php" },
+        { PathType.JsonPath, "https://github.com/json-path/JsonPath" },
+        { PathType.XPath, "https://www.w3schools.com/xml/xpath_syntax.asp" },
+    };
+
+    [Parameter]
+    public Path Path { get; set; }
+
+    [Parameter]
+    public EventCallback<Path> PathChanged { get; set; }
+
+    [Parameter]
+    public InputDebounceTimer DebounceTimer { get; set; }
+
+    [Parameter]
+    public ICollection<Match> Matches { get; set; }
+
+    [Parameter]
+    public string Error { get; set; }
+
+    private string PathValue { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        PathValue = Path?.Value;
+    }
+
+    public void Init()
+    {
+        DebounceTimer.Elapsed += OnPathDebounced;
+    }
+
+    private void OnPathChanged(string path)
+    {
+        DebounceTimer.Start();
+    }
+
+    private void OnPathDebounced()
+    {
+        Path = new Path(PathType.XPath, PathValue);
+        PathChanged.InvokeAsync(Path);
+    }
+}

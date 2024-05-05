@@ -1,0 +1,55 @@
+﻿@using DevTools.Views.Pages.Pather.Models
+
+<div>
+    <div>
+        <button>Copy</button>
+        <InputSelect @bind-Value=ViewMode>
+            <option value="@EViewMode.Node">Node</option>
+            <option value="@EViewMode.Text">Text</option>
+        </InputSelect>
+    </div>
+    <div>
+        <ol>
+            @foreach (Match match in Matches)
+            {
+                <li @onmouseenter="() => OnMouseEnterMatch(match)"
+                    @onmouseleave="() => OnMouseLeaveMatch(match)">
+                    @ShowMatch(match)
+                </li>
+            }
+        </ol>
+    </div>
+</div>
+
+@code {
+
+    private enum EViewMode 
+    {
+        Node,
+        Text
+    }
+
+    [Parameter]
+    public IEnumerable<Match> Matches { get; set; }
+
+    private EViewMode ViewMode { get; set; }
+
+    private string ShowMatch(Match match)
+    {
+        return ViewMode switch
+        {
+            EViewMode.Node => match.Node,
+            _ => match.Text
+        };
+    }
+
+    private void OnMouseEnterMatch(Match match)
+    {
+        
+    }
+
+    private void OnMouseLeaveMatch(Match match)
+    {
+
+    }
+}
