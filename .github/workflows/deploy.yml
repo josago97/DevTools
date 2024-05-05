@@ -91,4 +91,4 @@ jobs:
       uses: JamesIves/github-pages-deploy-action@v4
       with:
         BRANCH: gh-pages
-        FOLDER: src/release/wwwroot
+        FOLDER: release/wwwroot
