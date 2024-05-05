@@ -17,10 +17,6 @@ on:
       - .github/workflows/deploy.yml
       - DevTools/**
 
-defaults:
- run:
-  working-directory: ./src
-
 jobs:
   deploy-to-github-pages:
     # use ubuntu-latest image to run steps on
